@@ -4,6 +4,44 @@
 
 Everyday brings nutrition, money, tasks, habits, saved references, and reminders into one private workspace. Five shared engines are configured by a module catalog rather than rebuilt as isolated applications.
 
+## What's inside
+
+### 📊 Trackers (EntryTracker)
+
+Log a number and see the right view of it over time: daily totals, running trends, category breakdowns, or snapshots.
+
+Calories · Budget · Water Intake · Weight · Steps · Time Tracking · Subscriptions · Savings Goal · Net Worth · Investments
+
+### ✅ Lists (Checklist)
+
+Capture an item, keep it organised, and check it off without losing its completed history.
+
+Todo · Grocery List · Watchlist · Bucket List · Gift Ideas
+
+### 🔥 Streaks (StreakTracker)
+
+Check in for today, protect the chain, and review the days you showed up.
+
+Exercise · Medication · Meditation · Habit Tracker · Language Learning · Skill Practice · Gratitude Log
+
+### 💾 Saved (SavedItems)
+
+Keep useful references with notes, tags, and fields that make them easy to find later.
+
+Link Saver · Journal · Reading List · Contacts · Recipe Box · Idea Inbox · Quote Collector
+
+### 📅 Reminders (DueDateTracker)
+
+See what is due next, what is overdue, and what has already been completed.
+
+Debt Payoff · Remittance Log · Chore Schedule · Package Tracker · Warranty Tracker · Document Expiry · Vehicle Maintenance · Course Tracker
+
+### Plus the meta layer
+
+Dashboard · Goals · Global Search · Backup / Export / Import · Connect to AI (read-only MCP)
+
+**41 catalog features, five reusable engines.** The 37 engine modules are configuration entries rather than 37 separate rewrites; the meta layer works across them.
+
 The catalog contains **37 engine modules**: the 36 planned core modules plus Investments, an additional tracker. Combined with the four original catalog meta features—Dashboard, Goals, Global Search, and Backup/Import—that is **41 built/configured catalog features overall**. Connect to AI/MCP is an additional integration surface and is not included in that catalog count.
 
 ```mermaid
@@ -82,6 +120,7 @@ Open your project’s **Supabase SQL Editor**. Paste and run each file once, in 
 7. `supabase/mcp-access-tokens-migration.sql`
 8. `supabase/migrations/20260721180000_mcp_service_role_token_lookup.sql`
 9. `supabase/migrations/20260721183000_mcp_read_only_data_grants.sql`
+10. `supabase/migrations/20260721190000_demo_seed_service_role_write_grants.sql`
 
 This order is safe on a fresh project. The schema/migrations use `IF NOT EXISTS`, safe duplicate grants, and policy replacement where needed. The two final MCP migrations are intentionally retained even though the current baseline SQL includes the same grants: they make both fresh and previously initialized projects safe.
 
@@ -89,8 +128,8 @@ Why the final MCP steps matter:
 
 - `mcp_access_tokens` stores only a SHA-256 token hash and is protected by owner-scoped RLS.
 - The Edge Function gets **read-only** `service_role` access to that token table, so it can resolve a token owner.
-- The Edge Function gets **read-only** `service_role` access to the six tables it exposes: entries, checklists, streaks, saved items, due items, and goals.
-- It receives no database write permission.
+- The MCP Edge Function performs only read queries against entries, checklists, streaks, saved items, due items, and goals. The same server-only service-role key also has controlled write grants for the local demo-seed script; it is never exposed to a connector or browser.
+- The local demo-seed script receives `SELECT`, `INSERT`, and `UPDATE` through the service-role key so it can perform deterministic upserts. This key must never be exposed to the browser or MCP connector.
 
 ### 5. Verify the browser app before deploying MCP
 
@@ -189,7 +228,7 @@ Do not revert these behaviors when changing the server:
 - **No platform JWT block:** `verify_jwt = false` is scoped only to `everyday-mcp`; the handler authenticates every request with a hashed, revocable token.
 - **Correct internal API key placement:** the Edge Function sends its server credential only in the `apikey` header. It does not send the service key as a Bearer `Authorization` value, because that is not a user JWT.
 - **Safe query-token fallback:** a Bearer header is used first; `?token=` is considered only when no header is present. A query token cannot override an invalid header.
-- **Required table grants:** the MCP token lookup and every read-only tool table have explicit `service_role` `SELECT` grants.
+- **Required table grants:** the MCP token lookup and every read-only tool table have explicit `service_role` `SELECT` grants. The separate demo-seed migration adds `INSERT`/`UPDATE` only for the local seed workflow; it does not add MCP write tools.
 - **Safe error handling:** errors return normal MCP errors; token hashes, stack traces, and secret diagnostics are never exposed in HTTP responses.
 - **Direction-aware goals:** Weight is a descending goal using its first recorded snapshot as baseline; Savings and Net Worth remain ascending. The regression suite verifies the earlier 100%-for-weight bug cannot return.
 
@@ -213,6 +252,19 @@ The implementation is pragmatic rather than perfectly abstract: configuration dr
 
 Import is additive, so importing the same file twice creates duplicates. It rewrites ownership, IDs, and creation timestamps for the current anonymous user. Debt-payment rows therefore cannot preserve links to newly generated debt IDs; create debt payments in the app when demonstrating that relationship.
 
+For a larger, repeatable local demo dataset, use the deterministic seed script. It needs a local service-role key and the target anonymous user ID; do not place either value in `.env` or paste it into a chat.
+
+```powershell
+$env:SUPABASE_URL = 'https://YOUR_PROJECT_REF.supabase.co'
+$env:SUPABASE_SERVICE_ROLE_KEY = Read-Host 'Paste service-role key'
+$env:EVERYDAY_SEED_USER_ID = 'YOUR_EXISTING_ANONYMOUS_USER_ID'
+npm run seed:demo                 # preview: no database writes
+node scripts/seed-demo-data.mjs --apply
+Remove-Item Env:SUPABASE_SERVICE_ROLE_KEY
+```
+
+The script upserts approximately 3,013 fictional rows with fixed IDs, so rerunning it is safe and does not duplicate its own demo data. It never deletes existing records. Run `npm run verify:mcp` afterwards to verify the deployed read-only tools against the seeded account. Before its first write, run `supabase/migrations/20260721190000_demo_seed_service_role_write_grants.sql` in the Supabase SQL Editor.
+
 ## Known limitations
 
 - Desktop is the supported target; a dedicated mobile layout is out of scope.
@@ -235,7 +287,7 @@ Codex was the implementation partner throughout the project: shaping the reusabl
 For hackathon evidence, submit feedback from the final Codex session with `/feedback`, then replace this placeholder before submission:
 
 ```text
-Codex feedback session ID: TODO — paste the /feedback session ID here
+Codex feedback session ID: 019f701e-537e-7c12-865c-cbf9c1b4a055
 ```
 
 ## Suggested 3–5 minute demo

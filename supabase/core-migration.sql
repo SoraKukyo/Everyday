@@ -6,9 +6,10 @@ create table if not exists public.goals (id uuid primary key default gen_random_
 create table if not exists public.module_settings (user_id uuid not null references auth.users(id) on delete cascade, module_id text not null, settings jsonb not null default '{}'::jsonb, updated_at timestamptz not null default now(), primary key (user_id, module_id));
 
 grant select, insert, update, delete on public.checklist_items, public.streak_checkins, public.saved_items, public.due_items, public.goals, public.module_settings to authenticated;
--- The MCP Edge Function is intentionally read-only. service_role is used only
--- after personal-token authentication and every query is filtered by owner.
-grant select on public.checklist_items, public.streak_checkins, public.saved_items, public.due_items, public.goals to service_role;
+-- The MCP Edge Function remains intentionally read-only in code. The local
+-- demo-seed script also uses service_role for deterministic upserts; never
+-- expose that key to the browser or a connector.
+grant select, insert, update on public.checklist_items, public.streak_checkins, public.saved_items, public.due_items, public.goals, public.module_settings to service_role;
 alter table public.checklist_items enable row level security;
 alter table public.streak_checkins enable row level security;
 alter table public.saved_items enable row level security;

@@ -61,7 +61,7 @@ The generated `?token=...` URL is a secret. It can be retained in connector sett
 
    The verifier checks initialization, `tools/list`, all shared-table reads, and the goals read path without writing data. See the README for PowerShell and token-safe interactive examples.
 
-The two read-grant migrations give `service_role` **SELECT only** on the tables the function reads. The personal token flow in the browser uses the `authenticated` role with its own RLS policies. Never put the service-role key in `.env` variables beginning with `VITE_`.
+The MCP-specific migrations grant `service_role` **SELECT** on the tables the function reads. A separate demo-seed migration also grants `INSERT`/`UPDATE` to this server-only role for local deterministic seed upserts; the MCP Edge Function itself contains no write paths or tools. The personal token flow in the browser uses the `authenticated` role with its own RLS policies. Never put the service-role key in `.env` variables beginning with `VITE_`.
 
 ## Tools
 

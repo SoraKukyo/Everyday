@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { addRecord, listRecords, removeRecord, updateRecord } from '../data/genericRecords';
+import { addRecord, removeRecord, updateRecord } from '../data/genericRecords';
 import { modules } from '../config/modules';
-import { getAnonymousUser, isSupabaseConfigured, supabase } from '../data/supabaseClient';
+import { getAnonymousUser, isSupabaseConfigured } from '../data/supabaseClient';
+import { listAllRowsForUser } from '../data/pagedRecords';
 import { calculateGoalProgress, entryTotalFor, goalBaselineFor } from '../lib/engineLogic';
 
 const compatibleModules = modules.filter((module) => module.goalProgress?.compatible);
@@ -23,16 +24,18 @@ export default function Goals() {
 
   const refresh = async (active = user) => {
     if (!active) return;
-    const [stored, entryResponse] = await Promise.all([
-      listRecords('goals', active.id, 'goals'),
-      supabase.from('entry_records').select('module_id,value,metadata,occurred_at').eq('user_id', active.id),
+    const [storedResult, entryResult] = await Promise.all([
+      listAllRowsForUser('goals', active.id, { orderColumn: 'created_at' }),
+      listAllRowsForUser('entry_records', active.id, { orderColumn: 'occurred_at' }),
     ]);
-    const allEntries = entryResponse.data ?? [];
+    const stored = storedResult.rows;
+    const allEntries = entryResult.rows;
     const nextTotals = {};
     compatibleModules.forEach((module) => { nextTotals[module.id] = entryTotalFor(module.id, allEntries); });
     setGoals(stored);
     setEntries(allEntries);
     setTotals(nextTotals);
+    if (storedResult.truncated || entryResult.truncated) setStatus('Goals are calculated from the newest 5,000 records per table.');
   };
 
   useEffect(() => {

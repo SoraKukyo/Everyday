@@ -8,6 +8,10 @@ vi.mock('../src/data/supabaseClient.js', () => ({
   supabase: { from: state.from },
 }));
 
+vi.mock('../src/data/pagedRecords.js', () => ({
+  listAllRowsForUser: vi.fn(async (table) => ({ rows: state.tables[table] ?? [], truncated: false })),
+}));
+
 import Dashboard from '../src/dashboard/Dashboard';
 import GlobalSearch from '../src/meta/GlobalSearch';
 

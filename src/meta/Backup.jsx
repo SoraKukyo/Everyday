@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { getAnonymousUser, supabase } from '../data/supabaseClient';
+import { listAllRowsForUser } from '../data/pagedRecords';
 import { createBackupPayload, stageBackupPayload } from '../lib/engineLogic';
 
 const tables = ['entry_records', 'checklist_items', 'streak_checkins', 'saved_items', 'due_items', 'goals', 'module_settings'];
 
 export default function Backup() {
   const [message, setMessage] = useState(''); const [summary, setSummary] = useState(null);
-  async function exportData() { try { const user = await getAnonymousUser(); const data = {}; let total = 0; for (const table of tables) { const { data: rows, error } = await supabase.from(table).select('*').eq('user_id', user.id); if (error) throw error; data[table] = rows ?? []; total += data[table].length; } const blob = new Blob([JSON.stringify(createBackupPayload(data), null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = 'everyday-backup.json'; link.click(); URL.revokeObjectURL(url); setSummary(Object.fromEntries(tables.map((table) => [table, data[table].length]))); setMessage(`Backup downloaded: ${total} records.`); } catch (error) { setMessage(error.message); } }
+  async function exportData() { try { const user = await getAnonymousUser(); const loaded = await Promise.all(tables.map(async (table) => [table, await listAllRowsForUser(table, user.id, { orderColumn: table === 'entry_records' ? 'occurred_at' : table === 'streak_checkins' ? 'completed_on' : 'created_at' })])); const data = Object.fromEntries(loaded.map(([table, result]) => [table, result.rows])); const total = Object.values(data).reduce((sum, rows) => sum + rows.length, 0); const truncated = loaded.filter(([, result]) => result.truncated).map(([table]) => table); const blob = new Blob([JSON.stringify(createBackupPayload(data), null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = 'everyday-backup.json'; link.click(); URL.revokeObjectURL(url); setSummary(Object.fromEntries(tables.map((table) => [table, data[table].length]))); setMessage(truncated.length ? `Backup downloaded with the newest 5,000 records from: ${truncated.join(', ')}.` : `Backup downloaded: ${total} records.`); } catch (error) { setMessage(error.message); } }
   async function importData(event) {
     const inserted = {};
     try {
