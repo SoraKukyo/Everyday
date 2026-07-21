@@ -97,6 +97,8 @@ npm run build
 
 Open `dist/index.html` directly in a browser. The module navigation and frontend UI load without a Supabase project; data persistence and live records require the setup below. For a working core app backed by your own data, continue with the full setup rather than treating this preview as a complete installation.
 
+> **Why the built file can look empty:** Opening `dist/index.html` as `file://...` is a different browser storage origin from the dev server at `http://localhost:5173`. Anonymous Supabase auth is stored per origin, so the built file creates a separate anonymous user with no data from your dev-server session. That empty state is expected, not a missing-data bug.
+
 ## Advanced setup — working Supabase app + MCP server
 
 Follow this sequence in order for a fresh Supabase project. It includes the MCP fixes required for the working deployment: anonymous auth, RLS grants, No auth connector support, token lookup, data reads, and goal calculations.
@@ -356,12 +358,15 @@ The service-role key will be visible in terminal history with this method. Treat
 
 The script upserts approximately 3,013 fictional rows with fixed IDs, so rerunning it is safe and does not duplicate its own demo data. It never deletes existing records. Run `npm run verify:mcp` afterwards to verify the deployed read-only tools against the seeded account. Before its first write, run `supabase/migrations/20260721190000_demo_seed_service_role_write_grants.sql` in the Supabase SQL Editor.
 
+**Anonymous-session note:** Seeded or imported records belong to the anonymous user for the exact browser origin where they were created. Data seeded while using `npm run dev` at `http://localhost:5173` will not appear when the same browser opens `dist/index.html` as `file://...`; the two origins have different anonymous users. For a reliable seeded demo, keep using the dev server, or obtain the anonymous user ID from the `file://...` build session itself and rerun the seed script for that ID.
+
 ## Known limitations
 
 - Desktop is the supported target; a dedicated mobile layout is out of scope.
 - Generic engines retain some module/profile-specific UI branches.
 - App list/history pages use page-size limits; MCP scans are capped and module-history responses are paginated, so unusually large datasets need deliberate scale testing.
 - Backup import is additive and has the ID/timestamp/debt-link limitations described above.
+- Anonymous Supabase sessions are origin-bound. A `file://...` build and `http://localhost:5173` use different browser storage and therefore different anonymous users; records seeded or imported in one do not appear in the other.
 - Query-token connector URLs can expose a token in connector settings, browser history, or logs. OAuth is not implemented.
 - Not every module has a recorded live end-to-end verification in the repository.
 

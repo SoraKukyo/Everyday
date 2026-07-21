@@ -24,6 +24,7 @@ This document separates working code from live verification and deliberate scope
 - A debt payment cannot be prelinked to a debt created in the same generic import because the database creates the debt ID. Add payment-ledger records after import.
 - Import uses a client-side rollback attempt, not one database transaction.
 - Anonymous auth isolates data through RLS but does not provide traditional account recovery if browser/session storage is cleared.
+- Anonymous sessions are scoped to the browser origin. Opening the built app as `file://...` and running the app at `http://localhost:5173` creates different anonymous users, so records seeded or imported in one origin do not appear in the other.
 
 ## Product scope
 
