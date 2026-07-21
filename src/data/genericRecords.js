@@ -6,6 +6,12 @@ export async function listRecords(table, userId, moduleId) {
   return data;
 }
 
+export async function listRecordPage(table, userId, moduleId, offset = 0, pageSize = 100) {
+  const { data, error } = await supabase.from(table).select('*').eq('user_id', userId).eq('module_id', moduleId).order('created_at', { ascending: false }).range(offset, offset + pageSize - 1);
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function addRecord(table, payload) {
   const { data, error } = await supabase.from(table).insert(payload).select().single();
   if (error) throw error;

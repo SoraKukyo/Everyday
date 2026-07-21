@@ -29,6 +29,7 @@ export function matchesConfiguredFilter(data, filterId, filters = [], today) {
   if (rule.kind === 'date-after') return Boolean(value && value > todayKey);
   if (rule.kind === 'date-before') return Boolean(value && value < todayKey);
   if (rule.kind === 'date-after-or-empty') return !dateValue || dateValue > threshold;
+  if (rule.kind === 'date-before-or-empty') return !dateValue || dateValue < threshold;
   return true;
 }
 

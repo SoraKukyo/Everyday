@@ -1,0 +1,10 @@
+<svg width="180" height="206" viewBox="0 0 180 206" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title">
+  <title id="title">Everyday</title>
+  <rect x="20" y="10" width="140" height="140" rx="32" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+  <circle cx="90" cy="72" r="36" fill="none" stroke="#E2E8F0" stroke-width="1.5"/>
+  <circle cx="90" cy="72" r="8" fill="#2E2B27"/>
+  <circle cx="90" cy="36" r="9" fill="#7FB88A"/>
+  <circle cx="121" cy="90" r="9" fill="#74A2C6"/>
+  <circle cx="59" cy="90" r="9" fill="#D98CA0"/>
+  <text x="90" y="187" text-anchor="middle" font-family="Segoe UI, -apple-system, sans-serif" font-size="35" font-weight="700" letter-spacing="-1" fill="#2E2B27">Everyday</text>
+</svg>

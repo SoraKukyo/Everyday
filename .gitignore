@@ -10,6 +10,9 @@ dist/
 .env.*.local
 !.env.example
 
+# Supabase CLI project-link metadata
+supabase/.temp/
+
 # Logs
 *.log
 npm-debug.log*

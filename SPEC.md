@@ -1,97 +1,50 @@
 # Everyday — Project Spec
 
-## What this is
-A personal "everything app" — one dashboard replacing dozens of single-purpose daily-life apps, built from 5 reusable, config-driven engines.
+## Product scope
 
-## Engines & full module list (42 modules)
+Everyday is a personal “everything app”: one dashboard for daily-life tracking, built from five reusable, configuration-led engines instead of dozens of isolated mini-apps.
 
-### EntryTracker (numeric entry + running total/chart) — accent: Green (habits/nutrition types) or Pink (budget types), see mapping below
-- Calories — daily reset, goal, bar chart [BUILT]
-- Budget — sum, category field, currency
-- Water intake — daily reset, goal
-- Weight — latest + all_time, trend chart
-- Steps — daily reset, goal
-- Time tracking — duration, project/task field
-- Subscriptions — recurrence + dueDate metadata
-- Savings goal — target amount, progress %
-- Net worth — latest + all_time, trend chart
+The agreed catalog is **36 planned core engine modules + 4 original meta features = 40**. Investments is an additional implemented EntryTracker, making **41 built/configured catalog features overall**.
 
-### Checklist (add/check/delete) — accent: Pink
-- Todo
-- Grocery list
-- Watchlist (books/movies)
-- Bucket list
-- Gift ideas (per person)
+Connect to AI/MCP is an additional integration surface. It is implemented in code but is not included in the 41-feature catalog count above.
 
-### StreakTracker (mark done today, streak count) — accent: Green
-- Exercise
-- Medication/vitamin reminder
-- Meditation
-- Habit tracker (generic, user-defined)
-- Language learning
-- Skill practice
-- Gratitude log
+## Engines
 
-### SavedItems (save + notes/tags, browse later) — accent: Blue
-- Link saver (auto-detect type: instagram/youtube/article)
-- Journal/daily notes
-- Reading list (progress %)
-- Contacts (birthday, last talked)
-- Recipe box
-- Idea inbox
-- Quote collector
+| Engine | Modules |
+|---|---|
+| EntryTracker | Calories, Budget, Water intake, Weight, Steps, Time tracking, Subscriptions, Savings goal, Net worth, Investments |
+| Checklist | Todo, Grocery list, Watchlist, Bucket list, Gift ideas |
+| StreakTracker | Exercise, Medication/vitamin reminder, Meditation, Habit tracker, Language learning, Skill practice, Gratitude log |
+| SavedItems | Link saver, Journal/daily notes, Reading list, Contacts, Recipe box, Idea inbox, Quote collector |
+| DueDateTracker | Debt payoff, Remittance log, Chore schedule, Package/delivery tracker, Warranty/receipt tracker, Document expiry, Vehicle/bike maintenance, Course/certification tracker |
 
-### DueDateTracker (item + due date, flags upcoming/overdue) — accent: Blue
-- Debt payoff
-- Remittance log
-- Chore schedule (recurring)
-- Package/delivery tracker
-- Warranty/receipt tracker
-- Document expiry (visa, insurance, passport)
-- Vehicle/bike maintenance
-- Course/certification tracker
+The four catalog meta features are Dashboard, Goals tracker, Global Search, and Backup/Import. Connect to AI/MCP is an optional read-only integration beyond that catalog count.
 
-### Meta (built once, on top of all modules)
-- Goals tracker (cross-references any module)
-- Dashboard (snapshot card from every active module)
-- Global search (across all modules)
-- Data export/import (JSON backup)
+## Stack and architecture
 
-### Explicitly cut
-- Password/notes vault — security risk given public/shared repo for judging
+- React + Vite, with `vite-plugin-singlefile` for a self-contained production HTML build.
+- Supabase anonymous authentication, Row Level Security, and generic engine tables.
+- A configuration-led module catalog with pragmatic module/profile-specific UI branches where the shared pattern is not enough.
+- Optional read-only Supabase Edge Function implementing MCP.
 
-### Stretch only, not core (different UI patterns, build last if time allows)
-- Image saver, Mood tracker, Period/cycle tracker, Pomodoro timer, Calendar/event log, Currency converter, Meal planner
+## Current implementation status
 
-## Design system
-See design_system_spec.md for CSS variables, type scale, and card shell spec.
-Color mapping by category:
-- Green: habits, nutrition
-- Blue: links, reminders, notes
-- Pink: budget, self-care, tasks
+- All 37 engine modules in the current catalog are implemented in code, alongside the four original meta features.
+- Live persistence requires the base schema and the relevant history, habit, and goals migrations. Repository source alone cannot prove which SQL has run in a particular project.
+- Connect to AI/MCP requires its token migration, read-grant migrations, and Edge Function deployment. The handler has automated tests. During this project work, a ChatGPT No auth connector was manually connected and listed the server tools; Claude has not been manually verified here.
+- Automated tests cover shared engine logic, configuration validation, formatter/render regressions, generic/meta UI behavior, and MCP protocol behavior. This is distinct from end-to-end verification against a live user dataset.
 
-## Tech stack
-- React + Vite, single-file build (vite-plugin-singlefile)
-- Supabase (anonymous auth + RLS on every table)
-- No server
+## Explicitly excluded or deferred
 
-## Standing rules (also in AGENTS.md)
-- Never install a new package/plugin/dependency without asking first and explaining why. List in package.json, don't install without approval.
-- Never add analytics, telemetry, or third-party scripts without asking.
-- Keep each engine generic and config-driven — no hardcoded feature-specific logic inside an engine component.
-- Ask before architectural changes affecting more than one engine.
+- **Cut:** Password/notes vault. A public/shared hackathon repository is not an appropriate security boundary for secret storage.
+- **Stretch only, not built/configured:** Image saver, Mood tracker, Period/cycle tracker, Pomodoro timer, Calendar/event log, Currency converter, and Meal planner.
 
-## Build workflow (follow this for every module from here on)
-1. I name the next module to build.
-2. Before writing code, briefly summarize your plan: which engine it uses, what config fields it needs, any new fields/edge cases vs. previously built modules of the same engine, and the accent color per the mapping above.
-3. Wait for my go-ahead.
-4. Build it (config entry + any engine changes needed).
-5. Report back: what changed, whether it's fully generic or needed engine-specific tweaks, and confirm it's tested (persists via Supabase, matches design system).
-6. I review, approve, then we move to the next module.
+## Working rules
 
-Do not batch-build multiple modules in one uninterrupted pass — one module per review cycle, even if it feels slower. This is intentional so drift/bugs get caught early rather than compounding across 42 modules.
+- Keep module definitions configuration-led and reuse generic Supabase tables.
+- Do not create one table per feature.
+- Preserve anonymous authentication and RLS.
+- Do not install dependencies, analytics, telemetry, or third-party scripts without explicit approval.
+- Treat module-specific experiences as pragmatic exceptions, not proof that every engine is fully generic.
 
-## Status
-- [x] Calories (EntryTracker)
-- [ ] Budget (EntryTracker) — next
-- [ ] ...remaining 40 modules
+See `README.md` and `docs/` for setup, architecture, data model, module catalog, MCP guidance, demo flow, and limitations.

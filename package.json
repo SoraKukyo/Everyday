@@ -2,11 +2,14 @@
   "name": "everything-app",
   "private": true,
   "version": "0.1.0",
+  "license": "MIT-0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "verify:mcp": "node scripts/verify-mcp.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.4",
@@ -14,8 +17,13 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@vitejs/plugin-react": "^4.4.1",
+    "jsdom": "^26.1.0",
+    "supabase": "^2.109.1",
     "vite": "^6.2.2",
-    "vite-plugin-singlefile": "^2.2.0"
+    "vite-plugin-singlefile": "^2.2.0",
+    "vitest": "^3.2.4"
   }
 }

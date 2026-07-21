@@ -17,7 +17,14 @@ create index if not exists entry_records_owner_module_time_idx
 alter table public.entry_records enable row level security;
 
 grant select, insert, update, delete on table public.entry_records to authenticated;
+-- Read-only access for the MCP Edge Function. It always scopes reads to the
+-- personal access token's owner and never exposes this role to the browser.
+grant select on table public.entry_records to service_role;
 
+drop policy if exists "entry records are private to their owner" on public.entry_records;
+drop policy if exists "owners insert their own entry records" on public.entry_records;
+drop policy if exists "owners update their own entry records" on public.entry_records;
+drop policy if exists "owners delete their own entry records" on public.entry_records;
 create policy "entry records are private to their owner"
   on public.entry_records for select to authenticated
   using (user_id = auth.uid());
@@ -41,6 +48,7 @@ create table if not exists public.due_items (id uuid primary key default gen_ran
 create table if not exists public.goals (id uuid primary key default gen_random_uuid(), user_id uuid not null references auth.users(id) on delete cascade, module_id text not null, title text not null, target_module_id text not null, created_at timestamptz not null default now());
 
 grant select, insert, update, delete on public.checklist_items, public.streak_checkins, public.saved_items, public.due_items, public.goals to authenticated;
+grant select on public.checklist_items, public.streak_checkins, public.saved_items, public.due_items, public.goals to service_role;
 
 alter table public.checklist_items enable row level security;
 alter table public.streak_checkins enable row level security;
@@ -48,6 +56,11 @@ alter table public.saved_items enable row level security;
 alter table public.due_items enable row level security;
 alter table public.goals enable row level security;
 
+drop policy if exists "checklist items are private" on public.checklist_items;
+drop policy if exists "streak checkins are private" on public.streak_checkins;
+drop policy if exists "saved items are private" on public.saved_items;
+drop policy if exists "due items are private" on public.due_items;
+drop policy if exists "goals are private" on public.goals;
 create policy "checklist items are private" on public.checklist_items for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
 create policy "streak checkins are private" on public.streak_checkins for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
 create policy "saved items are private" on public.saved_items for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());

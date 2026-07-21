@@ -1,0 +1,4 @@
+[functions.everyday-mcp]
+# Remote MCP connector UIs may send no Supabase JWT. The function authenticates
+# every request itself with a hashed, revocable Everyday personal access token.
+verify_jwt = false
