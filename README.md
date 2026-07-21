@@ -120,7 +120,20 @@ Follow this sequence in order for a fresh Supabase project. It includes the MCP 
 
 Everyday’s migrations explicitly grant the browser’s `authenticated` role and the server-only `service_role` the required permissions, then enable RLS and add owner-scoped policies. Leaving automatic table exposure off is therefore the intended and least-privilege setup; it does not prevent the documented migrations from working.
 
-### 3. Clone and install
+### 3. Configure Everyday’s Supabase client
+
+1. In your Supabase project, open **Project Settings** (the gear icon in the left sidebar), then choose **API** or **API Keys**, depending on the Dashboard version.
+2. Copy these browser-safe values and keep them ready for step 4:
+
+   - **Project URL** — near the top; it looks like `https://abcdefghijklmnop.supabase.co`.
+   - **anon / public key** — called a **publishable** key in newer dashboards; it is a long string often beginning with `eyJ...`.
+
+   Do **not** copy the `service_role` / **secret** key shown on the same page. It is never used in the browser configuration.
+3. In the left sidebar, open **Authentication**, then **Providers** or **Settings**. Enable **Anonymous Sign-Ins**. Everyday calls `signInAnonymously()` on first load, so it cannot create the private user account required by its RLS policies without this setting.
+
+The repository root does not exist until the next step. Create `.env` immediately after cloning, using the two values above.
+
+### 4. Clone, install, and create the browser configuration
 
 ```bash
 git clone YOUR_REPOSITORY_URL everyday
@@ -130,22 +143,30 @@ npm ci --ignore-scripts --audit=false
 
 `npm ci` uses the committed lockfile. `--ignore-scripts` and `--audit=false` make installation predictable; run audits separately if desired. This repository’s working agreement requires developers to review and approve dependency installation themselves.
 
-### 4. Configure Everyday’s Supabase client
+Still in the cloned repository root, create the real local configuration file from the template:
 
-1. In **Project Settings → API**, copy the project URL and the browser-safe anon/publishable key.
-2. In **Authentication**, enable **Anonymous Sign-Ins**. The app uses `signInAnonymously()` to create its private anonymous user; it cannot work without this setting.
-3. Copy `.env.example` to `.env` at the repository root:
+```bash
+cp .env.example .env
+```
 
-   ```dotenv
-   VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
-   VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
-   ```
+On PowerShell, use:
 
-Never put a service-role key in `.env`, a `VITE_` variable, frontend code, screenshots, or a public connector URL.
+```powershell
+Copy-Item .env.example .env
+```
+
+Open `.env` and replace the two placeholders with the values copied in step 3:
+
+```dotenv
+VITE_SUPABASE_URL=https://abcdefghijklmnop.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+Those are illustrative values only; use your project’s actual URL and anon/publishable key. Never put a service-role key in `.env`, a `VITE_` variable, frontend code, screenshots, or a public connector URL.
 
 ### 5. Run the database SQL in this exact order
 
-Open your project’s **Supabase SQL Editor**. Paste and run each file once, in order:
+In the Supabase Dashboard’s left sidebar, open **SQL Editor** and choose **New query**. From the cloned repository, open the first SQL file below, paste its full contents into the new query, and choose **Run**. Wait for the successful result before creating a new query for the next file. Run every file exactly once and in this order:
 
 1. `supabase/schema.sql`
 2. `supabase/core-migration.sql`
@@ -169,11 +190,13 @@ Why the final MCP steps matter:
 
 ### 6. Verify the browser app before deploying MCP
 
+From the cloned repository root, start Vite:
+
 ```bash
 npm run dev
 ```
 
-Open the local URL shown by Vite. The first load should establish an anonymous session. Add a test entry, refresh, and confirm it persists. If anonymous sign-in fails, revisit step 4 before continuing.
+Open the local URL printed by Vite (normally `http://localhost:5173`) in a browser. The first load should establish an anonymous session. Add a test entry, refresh, and confirm it persists. If anonymous sign-in fails, return to step 3 and confirm **Anonymous Sign-Ins** is enabled and that the `.env` values are from this project.
 
 You can also run the automated suite and production build:
 
@@ -186,7 +209,7 @@ npm run build
 
 ### 7. Deploy the MCP Edge Function
 
-The committed [supabase/config.toml](supabase/config.toml) contains the required per-function setting:
+In the cloned repository, open [supabase/config.toml](supabase/config.toml). It already contains the required per-function setting:
 
 ```toml
 [functions.everyday-mcp]
@@ -195,7 +218,7 @@ verify_jwt = false
 
 This is required because ChatGPT/Claude No auth connectors send no Supabase user JWT. The function performs its own hashed personal-token check instead.
 
-Deploy from the repository root:
+In a terminal at the repository root, run:
 
 ```bash
 npx supabase login
@@ -203,14 +226,16 @@ npx supabase link --project-ref YOUR_PROJECT_REF
 npx supabase functions deploy everyday-mcp
 ```
 
-For hosted Supabase Edge Functions, `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are available server-side. Do not copy either into the frontend. If you configure `MCP_ALLOWED_ORIGINS`, include only browser origins that should call the function; leave it unset for normal server-side AI connectors and command-line verification.
+`npx supabase login` opens Supabase authentication in your browser. For `YOUR_PROJECT_REF`, use the identifier in the Project URL from step 3 — the portion between `https://` and `.supabase.co`. For example, `https://abcdefghijklmnop.supabase.co` uses project ref `abcdefghijklmnop`. The deploy command uploads `supabase/functions/everyday-mcp` to that linked project.
+
+For hosted Supabase Edge Functions, `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are available server-side. Do not create frontend variables for either value. If you configure the optional `MCP_ALLOWED_ORIGINS` Edge Function secret, include only browser origins that should call the function; leave it unset for normal server-side AI connectors and command-line verification.
 
 ### 8. Generate a personal MCP token
 
-In Everyday, open **Connect to AI** and generate an access token. The full token is displayed once.
+In the running Everyday browser app, choose **Connect to AI** from the left navigation. Under **Generate access token**, optionally enter a label such as `My ChatGPT connection`, then choose **Generate access token**. The full token is displayed once.
 
-- Use the raw token for direct clients that support `Authorization: Bearer …`.
-- Use the generated full `?token=…` connector URL for a connector that offers only **No auth**.
+- For a direct API client, use the **Raw token for Bearer auth** value as `Authorization: Bearer YOUR_TOKEN`.
+- For a ChatGPT or Claude connector using **No auth**, choose **Copy connection URL** under **Connector URL — No auth mode**. This produces the full URL with `?token=...` already appended.
 
 The URL contains the secret token. Do not share it. Revoke the token in Everyday if it is exposed.
 
@@ -225,6 +250,8 @@ The verifier performs no writes. It checks:
 
 #### PowerShell
 
+In a new PowerShell terminal at the repository root, set `MCP_URL` to the exact Project URL from step 3 plus `/functions/v1/everyday-mcp`, then paste the raw token generated in step 8 when prompted:
+
 ```powershell
 $env:MCP_URL = 'https://YOUR_PROJECT_REF.supabase.co/functions/v1/everyday-mcp'
 $env:MCP_TOKEN = Read-Host 'Paste the fresh MCP token'
@@ -234,6 +261,8 @@ Remove-Item Env:MCP_TOKEN
 ```
 
 #### Bash/zsh
+
+In a terminal at the repository root, use the same Project URL and raw token:
 
 ```bash
 export MCP_URL='https://YOUR_PROJECT_REF.supabase.co/functions/v1/everyday-mcp'
@@ -253,7 +282,7 @@ The server accepts either form of authentication:
 - `Authorization: Bearer YOUR_TOKEN` for direct API clients.
 - `https://YOUR_PROJECT_REF.supabase.co/functions/v1/everyday-mcp?token=YOUR_TOKEN` when no Authorization header is supplied.
 
-ChatGPT and Claude custom-connector UIs provide full OAuth or No auth, not a field for a raw Bearer token. Full OAuth is not implemented. For No auth, paste the full generated connector URL and select **No auth**.
+In the ChatGPT or Claude custom-connector screen, create a new remote MCP connection, paste the **Connector URL — No auth mode** value copied in step 8 into its server URL field, and select **No auth**. Their connector UIs provide full OAuth or No auth, not a field for a raw Bearer token. Full OAuth is not implemented.
 
 Manual testing during this project confirmed both a ChatGPT No auth connector and a Claude custom connector could connect, list the six tools, and return real data — including `get_goal_progress`, which is how the weight-goal calculation bug was originally caught. Re-run step 9 after every deployment to confirm the server is still reachable.
 
