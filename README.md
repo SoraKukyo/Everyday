@@ -12,7 +12,7 @@ Everyday solves this with two layers.
 
 **Layer one: the application layer.** More than 40 daily-life tools live in one place: budget, calories, habits, tasks, saved links, reminders, and more. They are built on five reusable engines rather than 40 separate rewrites. See [What’s inside](#whats-inside) below.
 
-**Layer two: the metacognitive layer.** A read-only MCP server lets Claude or ChatGPT reason directly over that data. People already review a budget or calorie trend to understand their patterns — often with an AI’s help. This layer lets that AI pull the real data directly instead of making someone copy-paste numbers into a chat by hand.
+**Layer two: the metacognitive layer.** A read-only MCP server lets ChatGPT or Claude reason directly over that data. People already review a budget or calorie trend to understand their patterns — often with an AI’s help. This layer lets that AI pull the real data directly instead of making someone copy-paste numbers into a chat by hand.
 
 Beyond bringing everything into one place, this design solves two problems most “all-in-one” apps do not:
 
@@ -22,9 +22,9 @@ Beyond bringing everything into one place, this design solves two problems most 
 
 ## Layer two in detail — your data, wherever you already think
 
-Everyday exposes a user’s own data to Claude and ChatGPT through a real, read-only MCP server, secured with a revocable personal token. Someone can ask “How is my week going?” or “Check my goal progress” and get an answer grounded in their actual calories, spending, habits, tasks, and reminders.
+Everyday exposes a user’s own data to ChatGPT and Claude through a real, read-only MCP server, secured with a revocable personal token. Someone can ask “How is my week going?” or “Check my goal progress” and get an answer grounded in their actual calories, spending, habits, tasks, and reminders.
 
-Both Claude and ChatGPT were connected and verified end-to-end during development. That testing found a real issue: an AI noticed that a 73.2 kg weight record was being reported as 100% complete toward a 70 kg goal. The bug was in the descending-goal calculation, not the demo data; it was fixed and covered by a regression test.
+Both ChatGPT and Claude were connected and verified end-to-end during development. That testing found a real issue: an AI noticed that a 73.2 kg weight record was being reported as 100% complete toward a 70 kg goal. The bug was in the descending-goal calculation, not the demo data; it was fixed and covered by a regression test.
 
 The result is not a feature bolted onto a tracker. It is the reflection layer the application data was built to support.
 
