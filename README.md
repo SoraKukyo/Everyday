@@ -278,7 +278,30 @@ The server accepts either form of authentication:
 - `Authorization: Bearer YOUR_TOKEN` for direct API clients.
 - `https://YOUR_PROJECT_REF.supabase.co/functions/v1/everyday-mcp?token=YOUR_TOKEN` when no Authorization header is supplied.
 
-In the ChatGPT or Claude custom-connector screen, create a new remote MCP connection, paste the **Connector URL — No auth mode** value copied in step 8 into its server URL field, and select **No auth**. Their connector UIs provide full OAuth or No auth, not a field for a raw Bearer token. Full OAuth is not implemented.
+**Where to find the Connector URL:** In Everyday, open **Connect to AI** and generate a token (step 8). The screen displays both a raw token and a full **Connector URL — No auth mode** with the token already appended as a `?token=...` query parameter. Copy the full URL, not just the raw token, for this step.
+
+#### ChatGPT setup
+
+ChatGPT’s custom-MCP UI is currently available through **Apps** and Developer mode. Its exact availability depends on plan and workspace permissions.
+
+1. Enable Developer mode for your account. For an eligible Business workspace, use **Settings → Apps → Advanced Settings → Developer mode**; admins can also start from **Workspace Settings → Apps → Create**. Enterprise/Edu workspaces require the administrator to grant developer-mode access first.
+2. Create the app from **Settings → Apps → Create**, or from **Workspace Settings → Apps → Create** if you are the workspace admin/owner.
+3. Enter the requested app details:
+
+   - **Name:** any label, such as `Everyday`.
+   - **Description:** optional; for example, `Read-only personal daily-life data from Everyday`.
+   - **Server URL / endpoint:** paste the complete **Connector URL — No auth mode** copied above.
+   - **Authentication:** choose **No auth**.
+
+4. Choose **Scan Tools**, wait for the six Everyday tools to be discovered, then choose **Create**. The app appears as a development app in **Settings → Apps**.
+
+Immediately after adding it, ChatGPT may briefly show a disconnected-looking status. During this project, that proved to be a UI timing/status quirk rather than a reliable connection test. Confirm the result by opening a new chat and using the Everyday app or asking it to call a tool; if tools fail, rerun step 9 and recheck the endpoint and token rather than relying on that status label.
+
+#### Claude setup
+
+Open Claude’s connector/settings screen, add a custom connector, paste the same full **Connector URL — No auth mode** as the server URL, and select **No auth**.
+
+This server does not implement OAuth. Use the generated query-token URL for these No-auth connector flows; keep it private and revoke it through Everyday if it is exposed.
 
 Manual testing during this project confirmed both a ChatGPT No auth connector and a Claude custom connector could connect, list the six tools, and return real data — including `get_goal_progress`, which is how the weight-goal calculation bug was originally caught. Re-run step 9 after every deployment to confirm the server is still reachable.
 
