@@ -245,11 +245,11 @@ The verifier performs no writes. It checks:
 
 #### PowerShell
 
-In a new PowerShell terminal at the repository root, set `MCP_URL` to the exact Project URL from step 3 plus `/functions/v1/everyday-mcp`, then paste the raw token generated in step 8 when prompted:
+In a new PowerShell terminal at the repository root, set `MCP_URL` to the exact Project URL from step 3 and replace the token placeholder with the raw token generated in step 8:
 
 ```powershell
 $env:MCP_URL = 'https://YOUR_PROJECT_REF.supabase.co/functions/v1/everyday-mcp'
-$env:MCP_TOKEN = Read-Host 'Paste the fresh MCP token'
+$env:MCP_TOKEN = 'PASTE_YOUR_FRESH_MCP_TOKEN_HERE'
 $env:MCP_AUTH_MODE = 'query' # tests the No auth connector path
 npm run verify:mcp
 Remove-Item Env:MCP_TOKEN
@@ -261,12 +261,13 @@ In a terminal at the repository root, use the same Project URL and raw token:
 
 ```bash
 export MCP_URL='https://YOUR_PROJECT_REF.supabase.co/functions/v1/everyday-mcp'
-read -rsp 'Paste the fresh MCP token: ' MCP_TOKEN; echo
-export MCP_TOKEN
+export MCP_TOKEN='PASTE_YOUR_FRESH_MCP_TOKEN_HERE'
 export MCP_AUTH_MODE=query # tests the No auth connector path
 npm run verify:mcp
 unset MCP_TOKEN
 ```
+
+The token will be visible in your terminal history using this method. This is a local, one-time verification step — revoke the token afterward through **Connect to AI** if you are concerned about exposure, or clear your terminal history.
 
 Set `MCP_AUTH_MODE=bearer` to test the direct Bearer-header path instead. A successful run prints `MCP verification passed`; it does not print the token.
 
@@ -316,12 +317,14 @@ For a larger, repeatable local demo dataset, use the deterministic seed script. 
 
 ```powershell
 $env:SUPABASE_URL = 'https://YOUR_PROJECT_REF.supabase.co'
-$env:SUPABASE_SERVICE_ROLE_KEY = Read-Host 'Paste service-role key'
+$env:SUPABASE_SERVICE_ROLE_KEY = 'PASTE_YOUR_SERVICE_ROLE_KEY_HERE'
 $env:EVERYDAY_SEED_USER_ID = 'YOUR_EXISTING_ANONYMOUS_USER_ID'
 npm run seed:demo                 # preview: no database writes
 node scripts/seed-demo-data.mjs --apply
 Remove-Item Env:SUPABASE_SERVICE_ROLE_KEY
 ```
+
+The service-role key will be visible in terminal history with this method. Treat it as highly sensitive: use this only for the local one-time seed operation, then close the terminal or clear its history. Never place it in `.env`, a `VITE_` variable, source control, screenshots, or a connector URL.
 
 The script upserts approximately 3,013 fictional rows with fixed IDs, so rerunning it is safe and does not duplicate its own demo data. It never deletes existing records. Run `npm run verify:mcp` afterwards to verify the deployed read-only tools against the seeded account. Before its first write, run `supabase/migrations/20260721190000_demo_seed_service_role_write_grants.sql` in the Supabase SQL Editor.
 
