@@ -2,7 +2,31 @@
 
 > **Everyday is a personal operating system for daily life, built from reusable tracking engines rather than dozens of isolated apps.**
 
-Everyday brings nutrition, money, tasks, habits, saved references, and reminders into one private workspace. Five shared engines are configured by a module catalog rather than rebuilt as isolated applications.
+## The problem
+
+Daily life is usually split between a calorie counter, budget app, habit tracker, task list, link saver, reminders, and more — each with its own data and its own idea of what matters. Moving between them means repeatedly rebuilding context, while the question that actually matters — “how is my week going?” — has no single answer. The data is there, but it is siloed, so it is hard to see patterns or reflect before the next decision. Everyday brings those records into one app, one data model, and one place to get useful answers instead of another pile of logs.
+
+## The solution
+
+Everyday solves this with two layers.
+
+**Layer one: the application layer.** More than 40 daily-life tools live in one place: budget, calories, habits, tasks, saved links, reminders, and more. They are built on five reusable engines rather than 40 separate rewrites. See [What’s inside](#whats-inside) below.
+
+**Layer two: the metacognitive layer.** A read-only MCP server lets Claude or ChatGPT reason directly over that data. People already review a budget or calorie trend to understand their patterns — often with an AI’s help. This layer lets that AI pull the real data directly instead of making someone copy-paste numbers into a chat by hand.
+
+Beyond bringing everything into one place, this design solves two problems most “all-in-one” apps do not:
+
+1. **Zero setup for the user.** No server to run and nothing to deploy: open one configured HTML file, and data reads and writes directly to the cloud. This matters more than it sounds. A good idea that requires real setup effort loses most people before they ever use it; tell ten people “this app is great, but you need to configure a server first,” and most will not bother. Tell them “click this one file,” and they will. Everyday is built for the second version.
+
+2. **One place instead of a dozen.** A saved Instagram reel sits in a chat thread. A packing list lives in Notes. A watchlist is pinned on a movie site that rarely gets opened. Budget lives in one subscription app, calories in another. Nothing talks to anything else, and finding any one thing means remembering which silo it is in. Everyday exists so all of that lives in one place, with one shared way to actually use it.
+
+## Layer two in detail — your data, wherever you already think
+
+Everyday exposes a user’s own data to Claude and ChatGPT through a real, read-only MCP server, secured with a revocable personal token. Someone can ask “How is my week going?” or “Check my goal progress” and get an answer grounded in their actual calories, spending, habits, tasks, and reminders.
+
+Both Claude and ChatGPT were connected and verified end-to-end during development. That testing found a real issue: an AI noticed that a 73.2 kg weight record was being reported as 100% complete toward a 70 kg goal. The bug was in the descending-goal calculation, not the demo data; it was fixed and covered by a regression test.
+
+The result is not a feature bolted onto a tracker. It is the reflection layer the application data was built to support.
 
 ## What's inside
 
