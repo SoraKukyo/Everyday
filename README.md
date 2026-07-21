@@ -345,6 +345,17 @@ Import is additive, so importing the same file twice creates duplicates. It rewr
 
 For a larger, repeatable local demo dataset, use the deterministic seed script. It needs a local service-role key and the target anonymous user ID; do not place either value in `.env` or paste it into a chat.
 
+**Finding your anonymous user ID:** With the app running in the exact browser origin you intend to seed—for example, `npm run dev` at `http://localhost:5173`—open DevTools with **F12**, select **Console**, and paste:
+
+```javascript
+const sessionKey = Object.keys(localStorage)
+  .find((key) => key.startsWith('sb-') && key.endsWith('-auth-token'));
+
+JSON.parse(localStorage.getItem(sessionKey)).user.id
+```
+
+This prints the current anonymous user’s UUID. Copy only that value. Do not copy or share the full session object; it also contains an access token. If it returns `null` or errors, refresh the app so anonymous sign-in can complete, then try again.
+
 ```powershell
 $env:SUPABASE_URL = 'https://YOUR_PROJECT_REF.supabase.co'
 $env:SUPABASE_SERVICE_ROLE_KEY = 'PASTE_YOUR_SERVICE_ROLE_KEY_HERE'
