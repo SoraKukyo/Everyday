@@ -282,18 +282,23 @@ The server accepts either form of authentication:
 
 #### ChatGPT setup
 
-ChatGPT’s custom-MCP UI is currently available through **Apps** and Developer mode. Its exact availability depends on plan and workspace permissions.
+These steps reflect the personal-account flow manually used and verified during this project:
 
-1. Enable Developer mode for your account. For an eligible Business workspace, use **Settings → Apps → Advanced Settings → Developer mode**; admins can also start from **Workspace Settings → Apps → Create**. Enterprise/Edu workspaces require the administrator to grant developer-mode access first.
-2. Create the app from **Settings → Apps → Create**, or from **Workspace Settings → Apps → Create** if you are the workspace admin/owner.
-3. Enter the requested app details:
+1. Open ChatGPT **Settings**.
+2. Go to **Plugins**.
+3. Ensure **Developer mode** is enabled and custom plugins are allowed.
+4. Choose **Browse plugins**, then **Add plugin** (or the equivalent option to add a custom or unlisted connector).
+5. Enter the requested connector details:
 
    - **Name:** any label, such as `Everyday`.
    - **Description:** optional; for example, `Read-only personal daily-life data from Everyday`.
-   - **Server URL / endpoint:** paste the complete **Connector URL — No auth mode** copied above.
+   - **Server URL:** paste the complete **Connector URL — No auth mode** copied above.
    - **Authentication:** choose **No auth**.
+   - **Type:** choose the appropriate option if ChatGPT prompts for one. **Before finalizing this README, confirm the exact option selected in the verified setup; it is intentionally not guessed here.**
 
-4. Choose **Scan Tools**, wait for the six Everyday tools to be discovered, then choose **Create**. The app appears as a development app in **Settings → Apps**.
+6. Save or add the connector.
+
+Account type and plan can change the exact menu path and labels; for example, Business and Enterprise workspaces may use **Workspace Settings → Apps** instead. The steps above are the personal-account flow verified during this project. If your account differs, look for the equivalent custom or unlisted connector option under **Settings**.
 
 Immediately after adding it, ChatGPT may briefly show a disconnected-looking status. During this project, that proved to be a UI timing/status quirk rather than a reliable connection test. Confirm the result by opening a new chat and using the Everyday app or asking it to call a tool; if tools fail, rerun step 9 and recheck the endpoint and token rather than relying on that status label.
 
