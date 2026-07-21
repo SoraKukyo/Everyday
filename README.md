@@ -124,7 +124,7 @@ Everyday’s migrations explicitly grant the browser’s `authenticated` role an
 
 1. Open your project in the Supabase Dashboard. The **Project URL** is visible at the top of the project dashboard as soon as you open it; it looks like `https://abcdefghijklmnop.supabase.co`.
 2. For the **anon / public key**, open **Project Settings** (the gear icon in the left sidebar), then choose **API** or **API Keys**, depending on the Dashboard version. It is called a **publishable** key in newer dashboards and is a long string often beginning with `eyJ...`. Do **not** copy the `service_role` / **secret** key shown on the same page; it is never used in the browser configuration.
-3. In the left sidebar, open **Authentication**, then **Providers** or **Settings**. Enable **Anonymous Sign-Ins**. Everyday calls `signInAnonymously()` on first load, so it cannot create the private user account required by its RLS policies without this setting.
+3. In the left sidebar, open **Authentication**, then **Sign In / Providers**. Enable **Anonymous Sign-Ins**. Everyday calls `signInAnonymously()` on first load, so it cannot create the private user account required by its RLS policies without this setting. This tab is labeled **Sign In / Providers** as of this writing; check nearby Authentication tabs if Supabase changes the label.
 
 The repository root does not exist until the next step. Create `.env` immediately after cloning, using the two values above.
 
