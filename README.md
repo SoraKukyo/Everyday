@@ -107,7 +107,20 @@ Follow this sequence in order for a fresh Supabase project. It includes the MCP 
 - A Supabase account.
 - A new Supabase project you control. Everyday does not create a project for you.
 
-### 2. Clone and install
+### 2. Create the Supabase project and configure Data API
+
+1. In the Supabase Dashboard, create a new project and wait until it is ready.
+2. During creation, or later in **Project Settings → Data API**, confirm these settings:
+
+| Setting | Value | Why it matters |
+|---|---|---|
+| **Enable Data API** | **ON** | Required for `supabase-js`, which is how Everyday reads and writes database records. |
+| **Automatically expose new tables** | **OFF** | Keeps new public-schema tables unavailable to Data API roles until this project’s SQL grants the exact access they need. |
+| **Enable automatic RLS** | **ON** | Makes a new table start protected by Row Level Security before its specific policies are added. |
+
+Everyday’s migrations explicitly grant the browser’s `authenticated` role and the server-only `service_role` the required permissions, then enable RLS and add owner-scoped policies. Leaving automatic table exposure off is therefore the intended and least-privilege setup; it does not prevent the documented migrations from working.
+
+### 3. Clone and install
 
 ```bash
 git clone YOUR_REPOSITORY_URL everyday
@@ -117,12 +130,11 @@ npm ci --ignore-scripts --audit=false
 
 `npm ci` uses the committed lockfile. `--ignore-scripts` and `--audit=false` make installation predictable; run audits separately if desired. This repository’s working agreement requires developers to review and approve dependency installation themselves.
 
-### 3. Create and configure Supabase
+### 4. Configure Everyday’s Supabase client
 
-1. In the Supabase Dashboard, create a new project and wait until it is ready.
-2. In **Project Settings → API**, copy the project URL and the browser-safe anon/publishable key.
-3. In **Authentication**, enable **Anonymous Sign-Ins**. The app uses `signInAnonymously()` to create its private anonymous user; it cannot work without this setting.
-4. Copy `.env.example` to `.env` at the repository root:
+1. In **Project Settings → API**, copy the project URL and the browser-safe anon/publishable key.
+2. In **Authentication**, enable **Anonymous Sign-Ins**. The app uses `signInAnonymously()` to create its private anonymous user; it cannot work without this setting.
+3. Copy `.env.example` to `.env` at the repository root:
 
    ```dotenv
    VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
@@ -131,7 +143,7 @@ npm ci --ignore-scripts --audit=false
 
 Never put a service-role key in `.env`, a `VITE_` variable, frontend code, screenshots, or a public connector URL.
 
-### 4. Run the database SQL in this exact order
+### 5. Run the database SQL in this exact order
 
 Open your project’s **Supabase SQL Editor**. Paste and run each file once, in order:
 
@@ -155,13 +167,13 @@ Why the final MCP steps matter:
 - The MCP Edge Function performs only read queries against entries, checklists, streaks, saved items, due items, and goals. The same server-only service-role key also has controlled write grants for the local demo-seed script; it is never exposed to a connector or browser.
 - The local demo-seed script receives `SELECT`, `INSERT`, and `UPDATE` through the service-role key so it can perform deterministic upserts. This key must never be exposed to the browser or MCP connector.
 
-### 5. Verify the browser app before deploying MCP
+### 6. Verify the browser app before deploying MCP
 
 ```bash
 npm run dev
 ```
 
-Open the local URL shown by Vite. The first load should establish an anonymous session. Add a test entry, refresh, and confirm it persists. If anonymous sign-in fails, revisit step 3 before continuing.
+Open the local URL shown by Vite. The first load should establish an anonymous session. Add a test entry, refresh, and confirm it persists. If anonymous sign-in fails, revisit step 4 before continuing.
 
 You can also run the automated suite and production build:
 
@@ -172,7 +184,7 @@ npm run build
 
 `vite-plugin-singlefile` creates `dist/index.html`. It can be opened directly, although Supabase persistence still needs network access.
 
-### 6. Deploy the MCP Edge Function
+### 7. Deploy the MCP Edge Function
 
 The committed [supabase/config.toml](supabase/config.toml) contains the required per-function setting:
 
@@ -193,7 +205,7 @@ npx supabase functions deploy everyday-mcp
 
 For hosted Supabase Edge Functions, `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are available server-side. Do not copy either into the frontend. If you configure `MCP_ALLOWED_ORIGINS`, include only browser origins that should call the function; leave it unset for normal server-side AI connectors and command-line verification.
 
-### 7. Generate a personal MCP token
+### 8. Generate a personal MCP token
 
 In Everyday, open **Connect to AI** and generate an access token. The full token is displayed once.
 
@@ -202,7 +214,7 @@ In Everyday, open **Connect to AI** and generate an access token. The full token
 
 The URL contains the secret token. Do not share it. Revoke the token in Everyday if it is exposed.
 
-### 8. Verify the deployed MCP server immediately
+### 9. Verify the deployed MCP server immediately
 
 The verifier performs no writes. It checks:
 
@@ -234,7 +246,7 @@ unset MCP_TOKEN
 
 Set `MCP_AUTH_MODE=bearer` to test the direct Bearer-header path instead. A successful run prints `MCP verification passed`; it does not print the token.
 
-### 9. Connect an AI client
+### 10. Connect an AI client
 
 The server accepts either form of authentication:
 
@@ -243,7 +255,7 @@ The server accepts either form of authentication:
 
 ChatGPT and Claude custom-connector UIs provide full OAuth or No auth, not a field for a raw Bearer token. Full OAuth is not implemented. For No auth, paste the full generated connector URL and select **No auth**.
 
-Manual testing during this project confirmed both a ChatGPT No auth connector and a Claude custom connector could connect, list the six tools, and return real data — including `get_goal_progress`, which is how the weight-goal calculation bug was originally caught. Re-run step 8 after every deployment to confirm the server is still reachable.
+Manual testing during this project confirmed both a ChatGPT No auth connector and a Claude custom connector could connect, list the six tools, and return real data — including `get_goal_progress`, which is how the weight-goal calculation bug was originally caught. Re-run step 9 after every deployment to confirm the server is still reachable.
 
 ## The MCP fixes this repository preserves
 
@@ -328,6 +340,6 @@ Codex feedback session ID: 019f701e-537e-7c12-865c-cbf9c1b4a055
 2. Calories: food, burn, deficit, and history.
 3. Budget: net cash flow, categories, analytics, and history.
 4. Todo archive history or Habit contribution history.
-5. Global Search, then Connect to AI after step 8 has passed.
+5. Global Search, then Connect to AI after step 9 has passed.
 
 Use [Demo Guide](docs/DEMO_GUIDE.md) as the recording checklist.
