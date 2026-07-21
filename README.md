@@ -243,7 +243,7 @@ The server accepts either form of authentication:
 
 ChatGPT and Claude custom-connector UIs provide full OAuth or No auth, not a field for a raw Bearer token. Full OAuth is not implemented. For No auth, paste the full generated connector URL and select **No auth**.
 
-Manual testing during this project work confirmed a ChatGPT No auth connector could connect and list the six tools. Re-run step 8 after every deployment. Claude compatibility has not been manually verified here.
+Manual testing during this project confirmed both a ChatGPT No auth connector and a Claude custom connector could connect, list the six tools, and return real data — including `get_goal_progress`, which is how the weight-goal calculation bug was originally caught. Re-run step 8 after every deployment to confirm the server is still reachable.
 
 ## The MCP fixes this repository preserves
 
